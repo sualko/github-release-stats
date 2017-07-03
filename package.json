@@ -1,0 +1,22 @@
+{
+  "name": "github-release-stats",
+  "version": "0.1.0",
+  "description": "Grabs github release numbers and creates nice figures",
+  "main": "cron.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cron": "node cron.js"
+  },
+  "author": "Klaus <klaus@jsxc.org>",
+  "license": "MIT",
+  "dependencies": {
+    "d3": "^4.9.1",
+    "d3-node": "^1.0.3",
+    "d3node-linechart": "0.0.7",
+    "d3node-output": "0.0.9",
+    "mysql": "^2.13.0",
+    "promise-mysql": "^3.0.1",
+    "request": "^2.81.0",
+    "request-promise-native": "^1.0.4"
+  }
+}
