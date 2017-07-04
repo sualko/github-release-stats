@@ -5,7 +5,9 @@
   "main": "cron.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "cron": "node cron.js"
+    "cron": "node cron.js",
+    "chart": "node generateCharts.js",
+    "clean": "rm *.html; rm *.png; rm *.svg"
   },
   "author": "Klaus <klaus@jsxc.org>",
   "license": "MIT",
@@ -13,7 +15,6 @@
     "d3": "^4.9.1",
     "d3-node": "^1.0.3",
     "d3node-linechart": "0.0.7",
-    "d3node-output": "0.0.9",
     "mysql": "^2.13.0",
     "promise-mysql": "^3.0.1",
     "request": "^2.81.0",
