@@ -38,7 +38,7 @@ function processRepo(repo) {
       return Promise.all(repoData.map((release) => {
          release.repoName = repo.name;
 
-         processRelease(release);
+         return processRelease(release);
       }));
    }).catch((err) => {
       console.warn('Could not request ' + url);
