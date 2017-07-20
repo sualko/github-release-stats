@@ -109,7 +109,7 @@ function generateChartForRepo(repo) {
       });
 
    x.domain([repo.minDate, repo.maxDate]);
-   y.domain([0, repo.maxDownloadCount]);
+   y.domain([0, repo.maxDownloadCount * 1.1]);
 
    g.append('g')
       .attr('transform', 'translate(0,' + height + ')')
@@ -119,13 +119,12 @@ function generateChartForRepo(repo) {
       .call(d3.axisLeft(y))
       .append('text')
       .attr('fill', '#000')
-      .attr('transform', 'rotate(-90)')
       .attr('y', 6)
-      .attr('dy', '0.71em')
-      .attr('text-anchor', 'end')
-      .text('Count');
+      .attr('x', 5)
+      .attr('text-anchor', 'start')
+      .text('Downloads');
 
-   var color = d3.scaleOrdinal(d3.schemeCategory20);
+   var color = d3.scaleOrdinal(d3.schemeCategory10);
    var getColor = () => {
       return color(asset.name);
    };
@@ -133,21 +132,11 @@ function generateChartForRepo(repo) {
    for (var assetId in repo.assets) {
       var asset = repo.assets[assetId];
 
-      g.append('path')
-         .datum(asset.downloads)
-         .attr('fill', 'none')
-         .attr('stroke', getColor)
-         .attr('stroke-linejoin', 'round')
-         .attr('stroke-linecap', 'round')
-         .attr('stroke-width', 1.5)
-         .attr('d', line);
+      if (asset.name.match(/.sig$/)) {
+         continue;
+      }
 
-      g.append('text')
-         .attr('transform', 'translate(' + (width + 3) + ',' + y(asset.downloads[0].value) + ')')
-         .attr('dy', '.35em')
-         .attr('text-anchor', 'end')
-         .style('fill', getColor)
-         .text(asset.name);
+      addLine(g, asset, getColor, line, x, y, width);
    }
 
    var fileName = './' + repo.name.replace('/', '-') + '.svg';
@@ -158,6 +147,51 @@ function generateChartForRepo(repo) {
       name: fileName,
       title: repo.name
    };
+}
+
+function addLine(g, asset, getColor, line, x, y, width) {
+   g.append('path')
+      .datum(asset.downloads)
+      .attr('fill', 'none')
+      .attr('stroke', getColor)
+      .attr('stroke-linejoin', 'round')
+      .attr('stroke-linecap', 'round')
+      .attr('stroke-width', 1.5)
+      .attr('d', line);
+
+   var circleWrapper = g.selectAll('.dot')
+      .data(function() {
+         return asset.downloads;
+      })
+      .enter()
+      .append('g')
+      .attr('transform', function(d) {
+         return 'translate(' + x(d.key) + ', ' + y(d.value) + ')';
+      });
+
+   circleWrapper.append('title')
+      .text(function(d) {
+         return d.value;
+      });
+
+   circleWrapper.append('circle')
+      .attr('r', 3)
+      .attr('fill', getColor);
+
+   circleWrapper.append('text')
+      .style("display", 'none')
+      .text(function(d) {
+         return d.value;
+      });
+
+   g.append('text')
+      .attr('transform', 'translate(' + (width + 3) + ',' + y(asset.downloads[asset.downloads.length - 1].value) + ')')
+      .attr('dy', '-.3em')
+      .attr('text-anchor', 'end')
+      .attr('font-family', 'sans-serif')
+      .attr('font-size', '80%')
+      .style('fill', getColor)
+      .text(asset.name);
 }
 
 function generateHtmlOverview(fileInfo) {
