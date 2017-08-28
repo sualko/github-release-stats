@@ -141,7 +141,7 @@ function generateChartForRepo(repo) {
    for (var assetId in repo.assets) {
       var asset = repo.assets[assetId];
 
-      if (asset.name.match(/.sig$/)) {
+      if (asset.name.match(/.sig$/) || (asset.maxDownloadCount / repo.maxDownloadCount) < 0.03) {
          continue;
       }
 
