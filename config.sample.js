@@ -12,4 +12,6 @@ config.db = {
    database: 'github_release_stats'
 };
 
+config.outputFolder = './'
+
 module.exports = config;

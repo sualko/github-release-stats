@@ -6,6 +6,15 @@ const fs = require('fs');
 const mysql = require('promise-mysql');
 const config = require('./config');
 
+if (!/\/$/.test(config.outputFolder)) {
+   config.outputFolder += '/';
+}
+
+if (!fs.existsSync(config.outputFolder)) {
+   console.log('Output folder doesn\'t exist');
+   return 1;
+}
+
 mysql.createConnection(config.db).then((conn) => {
    var result = conn.query('SELECT * FROM assets ORDER BY date ASC');
 
@@ -139,9 +148,9 @@ function generateChartForRepo(repo) {
       addLine(g, asset, getColor, line, x, y, width);
    }
 
-   var fileName = './' + repo.name.replace('/', '-') + '.svg';
+   var fileName = repo.name.replace('/', '-') + '.svg';
 
-   fs.writeFile(fileName, d3n.svgString(), () => {});
+   fs.writeFile(config.outputFolder + fileName, d3n.svgString(), () => {});
 
    return {
       name: fileName,
@@ -204,5 +213,5 @@ function generateHtmlOverview(fileInfo) {
 
    html += '</body></html>';
 
-   fs.writeFile('./index.html', html, () => {});
+   fs.writeFile(config.outputFolder + 'index.html', html, () => {});
 }
