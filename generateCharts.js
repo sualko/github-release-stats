@@ -24,8 +24,9 @@ mysql.createConnection(config.db).then((conn) => {
 }).then((rows) => {
    var repos = preprocessData(rows);
    var fileInfo = generateCharts(repos);
+   var tables = generateTables(repos);
 
-   generateHtmlOverview(fileInfo);
+   generateHtmlOverview(fileInfo, tables);
 });
 
 function preprocessData(rows) {
@@ -64,9 +65,25 @@ function preprocessData(rows) {
          repos[row.repoName].maxDownloadCount = row.downloadCount;
       }
 
+      if (!assets[row.id].maxDownloadCount || assets[row.id].maxDownloadCount < row.downloadCount) {
+         assets[row.id].maxDownloadCount = row.downloadCount;
+      }
+
+      let lastDownload;
+      let lastDownloadIndex = assets[row.id].downloads.length - 1;
+
+      if (lastDownloadIndex >= 0) {
+         lastDownload = assets[row.id].downloads[lastDownloadIndex];
+      } else {
+         lastDownload = {
+            value: 0
+         };
+      }
+
       assets[row.id].downloads.push({
          key: row.date,
-         value: row.downloadCount
+         value: row.downloadCount,
+         diff: row.downloadCount - lastDownload.value
       });
 
       repos[row.repoName].assets = assets;
@@ -145,6 +162,8 @@ function generateChartForRepo(repo) {
          continue;
       }
 
+      asset.color = getColor();
+
       addLine(g, asset, getColor, line, x, y, width);
    }
 
@@ -203,12 +222,41 @@ function addLine(g, asset, getColor, line, x, y, width) {
       .text(asset.name);
 }
 
-function generateHtmlOverview(fileInfo) {
-   var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"></head><body>\n';
+function generateTables(repos) {
+   let tables = {};
+
+   for (let repoName in repos) {
+      let tableString = '<table>';
+      let repo = repos[repoName];
+      let assets = repo.assets;
+      let baseValue = repo.maxDownloadCount;
+
+      for(let assetKey in assets) {
+         let asset = assets[assetKey];
+         let percentage = asset.maxDownloadCount / baseValue * 100;
+
+         tableString += '<tr>';
+         tableString += '<td>'+asset.name+'</td>';
+         tableString += '<td>'+asset.maxDownloadCount+'</td>';
+         tableString += '<td class="bar-container"><span class="bar" style="background-color:'+asset.color+';width:'+percentage+'%"></span></td>';
+         tableString += '</tr>';
+      }
+
+      tableString += '</table>';
+
+      tables[repos[repoName].name] = tableString;
+   }
+
+   return tables;
+}
+
+function generateHtmlOverview(fileInfo, tables) {
+   var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><style>body{font-family: sans-serif;font-size: 90%;}.bar-container{width:300px;} .bar{display:inline-block;height:1em;background-color:#808080;}</style></head><body>\n';
 
    for (let fi of fileInfo) {
       html += `<h2>${fi.title}</h2>\n`;
-      html += `<img src="${fi.name}" alt="${fi.title}" />\n`;
+      html += `<img src="./${fi.name}" alt="${fi.title}" />\n`;
+      html += tables[fi.title];
    }
 
    html += '</body></html>';
